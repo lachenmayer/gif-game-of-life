@@ -1,7 +1,6 @@
 module Main where
 
 import Control.Monad (when)
-import qualified Data.ByteString as BS
 import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.FilePath (replaceExtension)
