@@ -16,7 +16,13 @@ makeBW =
 type Grid = V.Vector (V.Vector Bool)
 width = V.length . V.head
 height = V.length
-at grid x y = (V.!) ((V.!) grid y) x
+at grid x y =
+  (V.!) ((V.!) grid y') x'
+  where
+    y' = (y + h) `mod` h
+    x' = (x + w) `mod` w
+    w = width grid
+    h = height grid
 
 gifGameOfLife :: FilePath -> FilePath -> IO ()
 gifGameOfLife inPath outPath = do
@@ -54,4 +60,23 @@ toImage grid =
 
 gameOfLifeStep :: Grid -> Grid
 gameOfLifeStep grid =
-  grid -- TODO
+  forEachCell cellRule grid
+  where
+    forEachCell f =
+      V.imap (\y row -> (V.imap (\x alive -> f alive x y) row))
+    cellRule alive x y =
+      let neighborCount' = neighborCount x y in
+        if alive
+          then neighborCount' == 2 || neighborCount' == 3
+          else neighborCount' == 3
+    neighborCount x y =
+      length (aliveNeighbors x y)
+    aliveNeighbors x y =
+      filter id (neighbors x y)
+    neighbors x y =
+      [ x - 1 & y - 1 , x & y - 1 , x + 1 & y - 1
+      , x - 1 &   y               , x + 1 &   y
+      , x - 1 & y + 1 , x & y + 1 , x + 1 & y + 1
+      ]
+    infix 0 &
+    (&) = at grid
